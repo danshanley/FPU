@@ -38,7 +38,7 @@ module fpu_tb ();
  op = 2'b00;
  #500
  $display($time, " << Simulation Complete >>");
- $stop;
+ $finish;
  // stop the simulation
  end
 
