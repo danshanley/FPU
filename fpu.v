@@ -36,55 +36,53 @@ module fpu(clk, A, B, opcode, outp);
 	assign b_mantissa[23:0] = {1'b1, B[22:0]};
 
 	always @ (posedge clk) begin
-		if (ADD)
-		begin
-			if (a_exponent < b_exponent)
-			begin
-				diff = b_exponent - a_exponent;
+		if (ADD) begin
+			if (a_exponent < b_exponent) begin
 				o_exponent = b_exponent;
+				diff = b_exponent - a_exponent;
 				tmp_mantissa = {a_mantissa >> diff};
-				if (a_sign == b_sign) // both negative or positive
-				begin
-					o_mantissa = b_mantissa + tmp_mantissa;
-				end
-				else if (a_sign == 1) // a negative
-				begin
-					o_mantissa = b_mantissa - tmp_mantissa;
-				end
-				else // b negative
-				begin
-					o_mantissa = tmp_mantissa - b_mantissa;
-				end
+				o_mantissa = b_mantissa + tmp_mantissa;
 			end
-			else if (b_exponent < a_exponent)
-			begin
+			else if (b_exponent < a_exponent) begin
+				o_exponent = a_exponent;
 				diff = a_exponent - b_exponent;
 				tmp_mantissa = {b_mantissa >> diff};
 				o_mantissa = a_mantissa + tmp_mantissa;
-				o_exponent = a_exponent;
 			end
-			else
-			begin
+			else begin
 				o_mantissa = {a_mantissa + b_mantissa} >> 1;
 				o_exponent = a_exponent + 1'b1;
 			end
 			o_sign = a_sign;
 		end
-		else if (SUB)
-			begin
-
+		else if (SUB) begin
+			if (a_exponent < b_exponent) begin
+				o_exponent = b_exponent;
+				diff = b_exponent - a_exponent;
+				tmp_mantissa = {a_mantissa >> diff};
+				o_mantissa = b_mantissa - tmp_mantissa;
 			end
-		else if (DIV)
-			begin
+			else if (b_exponent < a_exponent) begin
+				o_exponent = a_exponent;
+				diff = a_exponent - b_exponent;
+				tmp_mantissa = {b_mantissa >> diff};
+				o_mantissa = a_mantissa - tmp_mantissa;
+			end
+			else begin
+				o_mantissa = {a_mantissa - b_mantissa} << 1;
+				o_exponent = a_exponent - 1'b1;
+			end
+			o_sign = a_sign;
+		end
+		else if (DIV) begin
 				o_sign = a_sign ^ b_sign;
 				o_mantissa = a_mantissa / b_mantissa;
 				o_exponent = a_exponent - b_exponent;
-			end
-		else
-			begin
+		end
+		else begin
 				o_sign = a_sign ^ b_sign;
 				o_mantissa = a_mantissa * b_mantissa;
 				o_exponent = a_exponent + b_exponent;
-			end
+		end
 	end
 endmodule
