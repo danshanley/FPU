@@ -3,7 +3,7 @@ IEEE 754 floating point unit in verilog
 
 ## Generating test cases
 ```
-python3 testgen.py
+python3 testgen.py numTests
 ```
 
 ## Testing with Icarus verilog
