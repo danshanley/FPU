@@ -73,13 +73,14 @@ module fpu(clk, A, B, opcode, outp);
 			end
 			o_sign <= a_sign;
 		end else if (DIV) begin
-				o_sign <= a_sign ^ b_sign;
-				o_mantissa <= a_mantissa / b_mantissa;
-				o_exponent <= a_exponent - b_exponent;
+				o_sign = a_sign ^ b_sign;
+				o_mantissa = a_mantissa / b_mantissa;
+				o_exponent = (a_exponent - 127) - (b_exponent - 127);
+				o_exponent = o_exponent + 127;
 		end else begin
-				o_sign <= a_sign ^ b_sign;
-				o_mantissa <= a_mantissa * b_mantissa;
-				o_exponent <= a_exponent + b_exponent;
+				o_sign = a_sign ^ b_sign;
+				o_exponent = (a_exponent - 127) + (b_exponent - 127);
+				o_exponent = o_exponent + 127;
 		end
 	end
 endmodule
