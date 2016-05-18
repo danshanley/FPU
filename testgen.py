@@ -26,6 +26,6 @@ for n in range (0, numTests):
     print("b = 32'b" + binary(b) + ";")
     print("correct = 32'b" + binary(result) + ";")
     print("#400 //" + str(a) + " * " + str(b) + " = " + str(result))
-    print("if (correct - out > 1) begin")
+    print("if ((correct - out > 2) && (out - correct > 2)) begin")
     print("$display (\"A     : %b B      : %b\", a, b);")
     print("$display (\"Output: %b Correct: %b\", out, correct); end\n")

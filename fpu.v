@@ -17,6 +17,7 @@ module fpu(clk, A, B, opcode, outp);
 
 	reg [7:0] diff;
 	reg [23:0] tmp_mantissa;
+	reg [49:0] product;
 
 	assign outp[31] = o_sign;
 	assign outp[30:23] = o_exponent;
@@ -75,12 +76,21 @@ module fpu(clk, A, B, opcode, outp);
 		end else if (DIV) begin
 				o_sign = a_sign ^ b_sign;
 				o_mantissa = a_mantissa / b_mantissa;
-				o_exponent = (a_exponent - 127) - (b_exponent - 127);
-				o_exponent = o_exponent + 127;
+				o_exponent = (a_exponent) - (b_exponent - 127);
 		end else begin
 				o_sign = a_sign ^ b_sign;
-				o_exponent = (a_exponent - 127) + (b_exponent - 127);
-				o_exponent = o_exponent + 127;
+				o_exponent = (a_exponent) + (b_exponent - 127);
+				product = a_mantissa * b_mantissa;
+				if(product[49] == 0 && product[48] == 0 && product[47] == 0) begin
+					product = product << 2;
+					o_mantissa = product[49:25];
+				end else if (product[49] == 0 && product[48] == 0) begin
+					product = product << 1;
+					o_mantissa = product[49:25];
+					o_exponent = o_exponent + 1;
+				end else begin
+					o_mantissa = product[49:25];
+				end
 		end
 	end
 endmodule
