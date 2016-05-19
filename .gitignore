@@ -1,3 +1,5 @@
 *.vcd
+*.txt
+*.fish
 fpu
 .DS_Store

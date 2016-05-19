@@ -92,26 +92,19 @@ module fpu(clk, A, B, opcode, outp);
 		    end
 		    o_sign = a_sign;
 		  end else if (a_exponent < b_exponent) begin // B is bigger
-				$display("here");
 		    o_exponent = b_exponent;
 		    diff = b_exponent - a_exponent;
 		    tmp_mantissa = {a_mantissa >> diff};
 		    if (a_sign == ~b_sign) begin
 		      o_mantissa = b_mantissa + tmp_mantissa;
 		    end else begin
-					if(b_mantissa > tmp_mantissa) begin
-						$display("1");
-		      	o_mantissa = b_mantissa - tmp_mantissa;
-					end else begin
-						$display("2");
-		    		o_mantissa = tmp_mantissa - b_mantissa;
-					end
+	      	o_mantissa = b_mantissa - tmp_mantissa;
 		    end
 				o_sign = ~b_sign;
 		  end else begin
 		    if (a_sign == ~b_sign) begin
 		      o_mantissa = {a_mantissa + b_mantissa} >> 1;
-		      o_exponent = a_exponent + 1'b1;
+		      o_exponent = a_exponent;
 					o_sign = a_sign;
 		    end else begin
 		      if(a_mantissa > b_mantissa) begin
@@ -121,16 +114,43 @@ module fpu(clk, A, B, opcode, outp);
 		        o_mantissa = b_mantissa - a_mantissa;
 						o_sign = ~b_sign;
 		      end
-		      o_exponent = a_exponent + 1'b1;
+		      o_exponent = a_exponent;
 		    end
 		  end
-		  if (o_mantissa[23] == 0 && o_mantissa[24] == 1) begin
-		    o_exponent = o_exponent + 1;
-		    o_mantissa = o_mantissa >> 1;
+			if (o_mantissa[23:13] == 11'b00000000001) begin
+		    o_exponent = o_exponent - 10;
+		    o_mantissa = o_mantissa << 10;
+			end else if (o_mantissa[23:14] == 10'b0000000001) begin
+		    o_exponent = o_exponent - 9;
+		    o_mantissa = o_mantissa << 9;
+			end else if (o_mantissa[23:15] == 9'b000000001) begin
+		    o_exponent = o_exponent - 8;
+		    o_mantissa = o_mantissa << 8;
+		  end else if (o_mantissa[23:16] == 8'b00000001) begin
+		    o_exponent = o_exponent - 7;
+		    o_mantissa = o_mantissa << 7;
+		  end else if (o_mantissa[23:17] == 7'b0000001) begin
+		    o_exponent = o_exponent - 6;
+		    o_mantissa = o_mantissa << 6;
+		  end else if (o_mantissa[23:18] == 6'b000001) begin
+		    o_exponent = o_exponent - 5;
+		    o_mantissa = o_mantissa << 5;
+		  end else if (o_mantissa[23:19] == 5'b00001) begin
+		    o_exponent = o_exponent - 4;
+		    o_mantissa = o_mantissa << 4;
+		  end else if (o_mantissa[23:20] == 4'b0001) begin
+		    o_exponent = o_exponent - 3;
+		    o_mantissa = o_mantissa << 3;
+		  end else if (o_mantissa[23:21] == 3'b001) begin
+		    o_exponent = o_exponent - 2;
+		    o_mantissa = o_mantissa << 2;
+		  end else if (o_mantissa[23:22] == 2'b01) begin
+		    o_exponent = o_exponent - 1;
+		    o_mantissa = o_mantissa << 1;
 		  end
 		end else if (DIV) begin
 
-		end else begin
+		end else begin //Multiplication
 			o_sign = a_sign ^ b_sign;
 			o_exponent = a_exponent + b_exponent - 127;
 			product = a_mantissa * b_mantissa;

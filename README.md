@@ -3,8 +3,9 @@ IEEE 754 floating point unit in verilog
 
 ## Generating test cases
 ```
-python3 testgen.py numTests op
+python3 testgen.py op numTests
 ```
+Example: `python3 testgen.py SUB 5`
 
 ## Testing with Icarus verilog
 To synthesize:
