@@ -40,41 +40,94 @@ module fpu(clk, A, B, opcode, outp);
 
 	always @ (posedge clk) begin
 		if (ADD) begin
-			if (a_exponent > b_exponent) begin
-				o_exponent = a_exponent;
-				diff = a_exponent - b_exponent;
-				tmp_mantissa = {b_mantissa >> diff};
-				o_mantissa = a_mantissa + tmp_mantissa;
-			end else if (a_exponent < b_exponent) begin
-				o_exponent = b_exponent;
-				diff = b_exponent - a_exponent;
-				tmp_mantissa = {a_mantissa >> diff};
-				o_mantissa = b_mantissa + tmp_mantissa;
-			end else begin
-				o_mantissa = {a_mantissa + b_mantissa} >> 1;
-				o_exponent = a_exponent + 1'b1;
-			end
-			if (o_mantissa[23] == 0 && o_mantissa[24] == 1) begin
-				o_exponent = o_exponent + 1;
-				o_mantissa = o_mantissa >> 1;
-			end
-			o_sign <= a_sign;
+		  if (a_exponent > b_exponent) begin // A is bigger
+		    o_exponent = a_exponent;
+		    diff = a_exponent - b_exponent;
+		    tmp_mantissa = {b_mantissa >> diff};
+		    if (a_sign == b_sign) begin
+		      o_mantissa = a_mantissa + tmp_mantissa;
+		    end else begin
+		      o_mantissa = a_mantissa - tmp_mantissa;
+		    end
+		    o_sign = a_sign;
+		  end else if (a_exponent < b_exponent) begin // B is bigger
+		    o_exponent = b_exponent;
+		    diff = b_exponent - a_exponent;
+		    tmp_mantissa = {a_mantissa >> diff};
+		    if (a_sign == b_sign) begin
+		      o_mantissa = b_mantissa + tmp_mantissa;
+		    end else begin
+		      o_mantissa = b_mantissa - tmp_mantissa;
+		    end
+				o_sign = b_sign;
+		  end else begin
+		    if (a_sign == b_sign) begin
+		      o_mantissa = {a_mantissa + b_mantissa} >> 1;
+		      o_exponent = a_exponent + 1'b1;
+					o_sign = a_sign;
+		    end else begin
+		      if(a_mantissa > b_mantissa) begin
+		        o_mantissa = a_mantissa - b_mantissa;
+						o_sign = a_sign;
+		      end else begin
+		        o_mantissa = a_mantissa - b_mantissa;
+						o_sign = b_sign;
+		      end
+		      o_exponent = a_exponent + 1'b1;
+		    end
+		  end
+		  if (o_mantissa[23] == 0 && o_mantissa[24] == 1) begin
+		    o_exponent = o_exponent + 1;
+		    o_mantissa = o_mantissa >> 1;
+		  end
 		end else if (SUB) begin
-			if (a_exponent > b_exponent) begin
-				o_exponent = a_exponent;
-				diff = a_exponent - b_exponent;
-				tmp_mantissa = {b_mantissa >> diff};
-				o_mantissa = a_mantissa - tmp_mantissa;
-			end else if (a_exponent < b_exponent) begin
-				o_exponent = b_exponent;
-				diff = b_exponent - a_exponent;
-				tmp_mantissa = {a_mantissa >> diff};
-				o_mantissa = b_mantissa - tmp_mantissa;
-			end else begin
-				o_mantissa = {a_mantissa - b_mantissa} << 1;
-				o_exponent = a_exponent - 1'b1;
-			end
-			o_sign <= a_sign;
+		  if (a_exponent > b_exponent) begin // A is bigger
+		    o_exponent = a_exponent;
+		    diff = a_exponent - b_exponent;
+		    tmp_mantissa = {b_mantissa >> diff};
+		    if (a_sign == ~b_sign) begin
+		      o_mantissa = a_mantissa + tmp_mantissa;
+		    end else begin
+		      o_mantissa = a_mantissa - tmp_mantissa;
+		    end
+		    o_sign = a_sign;
+		  end else if (a_exponent < b_exponent) begin // B is bigger
+				$display("here");
+		    o_exponent = b_exponent;
+		    diff = b_exponent - a_exponent;
+		    tmp_mantissa = {a_mantissa >> diff};
+		    if (a_sign == ~b_sign) begin
+		      o_mantissa = b_mantissa + tmp_mantissa;
+		    end else begin
+					if(b_mantissa > tmp_mantissa) begin
+						$display("1");
+		      	o_mantissa = b_mantissa - tmp_mantissa;
+					end else begin
+						$display("2");
+		    		o_mantissa = tmp_mantissa - b_mantissa;
+					end
+		    end
+				o_sign = ~b_sign;
+		  end else begin
+		    if (a_sign == ~b_sign) begin
+		      o_mantissa = {a_mantissa + b_mantissa} >> 1;
+		      o_exponent = a_exponent + 1'b1;
+					o_sign = a_sign;
+		    end else begin
+		      if(a_mantissa > b_mantissa) begin
+		        o_mantissa = a_mantissa - b_mantissa;
+						o_sign = a_sign;
+		      end else begin
+		        o_mantissa = b_mantissa - a_mantissa;
+						o_sign = ~b_sign;
+		      end
+		      o_exponent = a_exponent + 1'b1;
+		    end
+		  end
+		  if (o_mantissa[23] == 0 && o_mantissa[24] == 1) begin
+		    o_exponent = o_exponent + 1;
+		    o_mantissa = o_mantissa >> 1;
+		  end
 		end else if (DIV) begin
 
 		end else begin
