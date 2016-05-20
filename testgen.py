@@ -1,4 +1,8 @@
-import struct, random, sys
+import struct, sys
+import numpy as np
+
+np.seterr(all='raise')
+
 def binary(num):
     return ''.join(bin(c).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', num))
 
@@ -17,23 +21,38 @@ elif(op == "DIV"):
 elif(op == "MULT"):
     f.write("op = 2'b11;\n")
 for n in range (0, numTests):
-    a = random.random()
-    b = random.random()
-    if(op == "ADD"):
-        result = a + b
-    elif(op == "SUB"):
-        result = a - b
-    elif(op == "DIV"):
-        result = a / b
-    elif(op == "MULT"):
-        result = a * b
-    f.write("a = 32'b" + binary(a) + ";\n")
-    f.write("b = 32'b" + binary(b) + ";\n")
-    f.write("correct = 32'b" + binary(result) + ";\n")
-    f.write("#400 //" + str(a) + " * " + str(b) + " = " + str(result) + "\n")
-    f.write("if (correct[31:11] != out[31:11]) begin\n")
-    f.write("$display (\"A      : %b %b %b\", a[31], a[30:23], a[22:0]);\n")
-    f.write("$display (\"B      : %b %b %b\", b[31], b[30:23], b[22:0]);\n")
-    f.write("$display (\"Output : %b %b %b\", out[31], out[30:23], out[22:0]);\n")
-    f.write("$display (\"Correct: %b %b %b\",correct[31], correct[30:23], correct[22:0]); end\n")
+    #If we get a FloatingPointError: invalid value encountered in add
+    #then decrement n and try again
+    try:
+        byte = np.random.bytes(4)
+        a = np.fromstring(byte, dtype=np.float32)
+        byte = np.random.bytes(4)
+        b = np.fromstring(byte, dtype=np.float32)
+        if(op == "ADD"):
+            result = a + b
+        elif(op == "SUB"):
+            result = a - b
+        elif(op == "DIV"):
+            result = a / b
+        elif(op == "MULT"):
+            result = a * b
+        f.write("a = 32'b" + binary(a) + ";\n")
+        f.write("b = 32'b" + binary(b) + ";\n")
+        f.write("correct = 32'b" + binary(result) + ";\n")
+        f.write("#400 //" + str(a[0]) + " * " + str(b[0]) + " = " + str(result[0]) + "\n")
+        if(op == "ADD"):
+            f.write("if ((correct - out > 2) && (out - correct > 2)) begin\n")
+        elif(op == "SUB"):
+            #f.write("if (correct[31:12] != out[31:12]) if ((correct[31:12] - out[31:12] > 2) && (out[31:12] - correct[31:12] > 2)) begin\n")
+            f.write("if ((correct - out > 2) && (out - correct > 2)) begin\n")
+        elif(op == "DIV"):
+            f.write("if (correct[31:12] != out[31:12]) begin\n")
+        elif(op == "MULT"):
+            f.write("if ((correct - out > 2) && (out - correct > 2)) begin\n")
+        f.write("$display (\"A      : %b %b %b\", a[31], a[30:23], a[22:0]);\n")
+        f.write("$display (\"B      : %b %b %b\", b[31], b[30:23], b[22:0]);\n")
+        f.write("$display (\"Output : %b %b %b\", out[31], out[30:23], out[22:0]);\n")
+        f.write("$display (\"Correct: %b %b %b\",correct[31], correct[30:23], correct[22:0]); end\n")
+    except:
+        n -= 1
 f.write("$display (\"Done.\");\n$finish;\n // stop the simulation\n end\n\nendmodule")
