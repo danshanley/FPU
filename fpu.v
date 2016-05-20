@@ -24,6 +24,10 @@ module fpu(clk, A, B, opcode, O);
 	reg [31:0] multiplier_b_in;
 	wire [31:0] multiplier_out;
 
+	reg [31:0] divider_a_in;
+	reg [31:0] divider_b_in;
+	wire [31:0] divider_out;
+
 	assign O[31] = o_sign;
 	assign O[30:23] = o_exponent;
 	assign O[22:0] = o_mantissa[22:0];
@@ -53,6 +57,13 @@ module fpu(clk, A, B, opcode, O);
 		.a(multiplier_a_in),
 		.b(multiplier_b_in),
 		.out(multiplier_out)
+	);
+
+	divider dividerMcDividerFace
+	(
+		.a(divider_a_in),
+		.b(divider_b_in),
+		.out(divider_out)
 	);
 
 	always @ (posedge clk) begin
@@ -103,7 +114,11 @@ module fpu(clk, A, B, opcode, O);
 				o_mantissa = adder_out[22:0];
 			end
 		end else if (DIV) begin
-
+			divider_a_in = A;
+			divider_b_in = B;
+			o_sign = divider_out[31];
+			o_exponent = divider_out[30:23];
+			o_mantissa = divider_out[22:0];
 		end else begin //Multiplication
 			multiplier_a_in = A;
 			multiplier_b_in = B;
@@ -401,4 +416,117 @@ module multiplication_normaliser(in_e, in_m, out_e, out_m);
 			out_m = in_m << 1;
 		end
   end
+endmodule
+
+module divider (a, b, out);
+	input [31:0] a;
+	input [31:0] b;
+	output [31:0] out;
+
+	wire [31:0] b_reciprocal;
+
+	reciprocal recip
+	(
+		.in(b),
+		.out(b_reciprocal)
+	);
+
+	multiplier mult
+	(
+		.a(a),
+		.b(b_reciprocal),
+		.out(out)
+	);
+
+endmodule
+
+module reciprocal (in, out);
+	input [31:0] in;
+
+	output [31:0] out;
+
+	assign out[31] = in[31];
+	assign out[22:0] = N2[22:0];
+	assign out[30:23] = (D==9'b100000000)? 9'h102 - in[30:23] : 9'h101 - in[30:23];
+
+	wire [31:0] D;
+	assign D = {1'b0, 8'h80, in[22:0]};
+
+	wire [31:0] C1; //C1 = 48/17
+	assign C1 = 32'h4034B4B5;
+	wire [31:0] C2; //C2 = 32/17
+	assign C2 = 32'h3FF0F0F1;
+	wire [31:0] C3; //C3 = 2.0
+	assign C1 = 32'h40000000;
+
+	wire [31:0] N0;
+	wire [31:0] N1;
+	wire [31:0] N2;
+
+	//Temporary connection wires
+	wire [31:0] S0_2D_out;
+	wire [31:0] S1_DN0_out;
+	wire [31:0] S1_2min_DN0_out;
+	wire [31:0] S2_DN1_out;
+	wire [31:0] S2_2minDN1_out;
+
+	//S0
+	multiplier S0_2D
+	(
+		.a(C2),
+		.b(D),
+		.out(S0_2D_out)
+	);
+
+	adder S0_N0
+	(
+		.a(C1),
+		.b({~S0_2D_out[31], S0_2D_out[30:0]}),
+		.out(N0)
+	);
+
+	//S1
+	multiplier S1_DN0
+	(
+		.a(D),
+		.b(N0),
+		.out(S1_DN0_out)
+	);
+
+	adder S1_2minDN0
+	(
+		.a(C3),
+		.b({~S1_DN0_out[31], S1_DN0_out[30:0]}),
+		.out(S1_2min_DN0_out)
+	);
+
+	multiplier S1_N1
+	(
+		.a(N0),
+		.b(S1_2min_DN0_out),
+		.out(N1)
+	);
+
+	//S2
+	multiplier S2_DN1
+	(
+		.a(D),
+		.b(N1),
+		.out(S2_DN1_out)
+	);
+
+	adder S2_2minDN1
+	(
+		.a(C3),
+		.b({~S2_DN1_out[31], S2_DN1_out[30:0]}),
+		.out(S2_2minDN1_out)
+	);
+
+	multiplier S2_N2
+	(
+		.a(N1),
+		.b(S2_2minDN1_out),
+		.out(N2)
+	);
+
 endmodule
