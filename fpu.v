@@ -1,4 +1,3 @@
-`timescale 1 ns/100 ps
 //IEEE 754 Single Precision ALU
 module fpu(clk, A, B, opcode, O);
 	input clk;
@@ -442,10 +441,6 @@ module divider (a, b, out);
 endmodule
 
 module reciprocal (in, out);
-initial begin
-$dumpfile("recip.vcd");
-$dumpvars(in, D, N0, N1, N2, S0_2D_out, S0_N0_in, C1);
-end
 	input [31:0] in;
 
 	output [31:0] out;
