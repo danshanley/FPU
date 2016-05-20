@@ -2,4 +2,5 @@
 *.txt
 *.fish
 fpu
+fpu_tb.v
 .DS_Store

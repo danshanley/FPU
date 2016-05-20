@@ -45,21 +45,21 @@ module fpu(clk, A, B, opcode, O);
 	assign DIV = opcode[1] & !opcode[0];
 	assign MUL = opcode[1] & opcode[0];
 
-	adder adderMcAdderFace
+	adder A1
 	(
 		.a(adder_a_in),
 		.b(adder_b_in),
 		.out(adder_out)
 	);
 
-	multiplier multiplierMcMultiplierFace
+	multiplier M1
 	(
 		.a(multiplier_a_in),
 		.b(multiplier_b_in),
 		.out(multiplier_out)
 	);
 
-	divider dividerMcDividerFace
+	divider D1
 	(
 		.a(divider_a_in),
 		.b(divider_b_in),
@@ -178,7 +178,7 @@ module adder(a, b, out);
   wire [7:0] o_e;
   wire [24:0] o_m;
 
-  addition_normaliser normie
+  addition_normaliser norm1
   (
     .in_e(i_e),
     .in_m(i_m),
@@ -284,7 +284,7 @@ module multiplier(a, b, out);
 	wire [7:0] o_e;
 	wire [47:0] o_m;
 
-	multiplication_normaliser normie
+	multiplication_normaliser norm1
 	(
 		.in_e(i_e),
 		.in_m(i_m),

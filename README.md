@@ -1,6 +1,8 @@
 ## FPU
 IEEE 754 floating point unit in verilog
 
+![Alt Text](https://i.imgur.com/4Mx3fpU.gif)
+
 ## Generating test cases
 ```
 python3 testgen.py op numTests
