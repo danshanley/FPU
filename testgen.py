@@ -48,10 +48,10 @@ for n in range (0, numTests):
             f.write("if (correct[31:12] != out[31:12]) begin\n")
         elif(op == "MULT"):
             f.write("if ((correct - out > 2) && (out - correct > 2)) begin\n")
-        f.write("$display (\"A      : %b %b %b\", a[31], a[30:23], a[22:0]);\n")
-        f.write("$display (\"B      : %b %b %b\", b[31], b[30:23], b[22:0]);\n")
-        f.write("$display (\"Output : %b %b %b\", out[31], out[30:23], out[22:0]);\n")
-        f.write("$display (\"Correct: %b %b %b\",correct[31], correct[30:23], correct[22:0]); end\n")
+        f.write("$display (\"A      : %b %b %b %h\", a[31], a[30:23], a[22:0], a);\n")
+        f.write("$display (\"B      : %b %b %b %h\", b[31], b[30:23], b[22:0], b);\n")
+        f.write("$display (\"Output : %b %b %b %h\", out[31], out[30:23], out[22:0], out);\n")
+        f.write("$display (\"Correct: %b %b %b %h\",correct[31], correct[30:23], correct[22:0], correct); $display();end\n")
     except:
         n -= 1
 f.write("$display (\"Done.\");\n$finish;\n // stop the simulation\n end\n\nendmodule")
