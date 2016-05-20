@@ -10,7 +10,7 @@ f = open("fpu_tb.v", 'w')
 op = str(sys.argv[1])
 numTests = int(sys.argv[2])
 
-f.write("//-----------------------------------------------------------\n// File: fpu_tb.v\n// FPU Test Bench\n//-----------------------------------------------------------\n`timescale 1 ns/100 ps\nmodule fpu_tb ();\n //----------------------------------------------------------\n // inputs to the DUT are reg type\n reg clock;\n reg [31:0] a, b;\n reg [1:0] op;\n reg [31:0] correct;\n //----------------------------------------------------------\n // outputs from the DUT are wire type\n wire [31:0] out;\n wire [49:0] pro;\n //----------------------------------------------------------\n // instantiate the Device Under Test (DUT)\n // using named instantiation\n fpu U1 (\n          .clk(clock),\n          .A(a),\n          .B(b),\n          .opcode(op),\n          .outp(out)\n        );\n //----------------------------------------------------------\n // create a 10Mhz clock\n always\n #100 clock = ~clock; // every 100 nanoseconds invert\n //----------------------------------------------------------\n // initial blocks are sequential and start at time 0\n initial\n begin\n $dumpfile(\"fpu_tb.vcd\");\n $dumpvars(0,clock, a, b, op, out);\n clock = 0;")
+f.write("//-----------------------------------------------------------\n// File: fpu_tb.v\n// FPU Test Bench\n//-----------------------------------------------------------\n`timescale 1 ns/100 ps\nmodule fpu_tb ();\n //----------------------------------------------------------\n // inputs to the DUT are reg type\n reg clock;\n reg [31:0] a, b;\n reg [1:0] op;\n reg [31:0] correct;\n //----------------------------------------------------------\n // outputs from the DUT are wire type\n wire [31:0] out;\n wire [49:0] pro;\n //----------------------------------------------------------\n // instantiate the Device Under Test (DUT)\n // using named instantiation\n fpu U1 (\n          .clk(clock),\n          .A(a),\n          .B(b),\n          .opcode(op),\n          .O(out)\n        );\n //----------------------------------------------------------\n // create a 10Mhz clock\n always\n #100 clock = ~clock; // every 100 nanoseconds invert\n //----------------------------------------------------------\n // initial blocks are sequential and start at time 0\n initial\n begin\n $dumpfile(\"fpu_tb.vcd\");\n $dumpvars(0,clock, a, b, op, out);\n clock = 0;")
 
 if(op == "ADD"):
     f.write("op = 2'b00;\n")
@@ -43,7 +43,6 @@ for n in range (0, numTests):
         if(op == "ADD"):
             f.write("if ((correct - out > 2) && (out - correct > 2)) begin\n")
         elif(op == "SUB"):
-            #f.write("if (correct[31:12] != out[31:12]) if ((correct[31:12] - out[31:12] > 2) && (out[31:12] - correct[31:12] > 2)) begin\n")
             f.write("if ((correct - out > 2) && (out - correct > 2)) begin\n")
         elif(op == "DIV"):
             f.write("if (correct[31:12] != out[31:12]) begin\n")
