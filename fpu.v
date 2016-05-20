@@ -1,3 +1,4 @@
+`timescale 1 ns/100 ps
 //IEEE 754 Single Precision ALU
 module fpu(clk, A, B, opcode, O);
 	input clk;
@@ -441,6 +442,10 @@ module divider (a, b, out);
 endmodule
 
 module reciprocal (in, out);
+initial begin
+$dumpfile("recip.vcd");
+$dumpvars(in, D, N0, N1, N2, S0_2D_out, S0_N0_in, C1);
+end
 	input [31:0] in;
 
 	output [31:0] out;
@@ -457,7 +462,7 @@ module reciprocal (in, out);
 	wire [31:0] C2; //C2 = 32/17
 	assign C2 = 32'h3FF0F0F1;
 	wire [31:0] C3; //C3 = 2.0
-	assign C1 = 32'h40000000;
+	assign C3 = 32'h40000000;
 
 	wire [31:0] N0;
 	wire [31:0] N1;
@@ -470,6 +475,10 @@ module reciprocal (in, out);
 	wire [31:0] S2_DN1_out;
 	wire [31:0] S2_2minDN1_out;
 
+	wire [31:0] S0_N0_in;
+
+	assign S0_N0_in = {~S0_2D_out[31], S0_2D_out[30:0]};
+
 	//S0
 	multiplier S0_2D
 	(
@@ -481,7 +490,7 @@ module reciprocal (in, out);
 	adder S0_N0
 	(
 		.a(C1),
-		.b({~S0_2D_out[31], S0_2D_out[30:0]}),
+		.b(S0_N0_in),
 		.out(N0)
 	);
 
