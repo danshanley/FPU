@@ -100,8 +100,9 @@ module fpu(clk, A, B, opcode, outp);
 				if (a_exponent == b_exponent) begin // Equal exponents
 					o_exponent = a_exponent;
 					if (a_sign == b_sign) begin // Equal signs = add
-						o_exponent = o_exponent + 1;
-						o_mantissa = {a_mantissa + b_mantissa} >> 1;
+						o_mantissa = {a_mantissa + b_mantissa};
+						//Signify to shift
+						o_mantissa[24] = 1;
 						o_sign = a_sign;
 					end else begin // Opposite signs = subtract
 						if(a_mantissa > b_mantissa) begin
@@ -110,15 +111,6 @@ module fpu(clk, A, B, opcode, outp);
 						end else begin
 							o_mantissa = b_mantissa - a_mantissa;
 							o_sign = b_sign;
-						end
-						if(o_mantissa[24] == 1) begin
-							o_exponent = o_exponent + 1;
-							o_mantissa = o_mantissa >> 1;
-						end else if(o_mantissa[23] != 1) begin
-							i_e1 = o_exponent;
-							i_m1 = o_mantissa;
-							o_exponent = o_e1;
-							o_mantissa = o_m1;
 						end
 					end
 				end else begin //Unequal exponents
@@ -143,15 +135,15 @@ module fpu(clk, A, B, opcode, outp);
 							o_mantissa = b_mantissa - tmp_mantissa;
 						end
 					end
-					if(o_mantissa[24] == 1) begin
-						o_exponent = o_exponent + 1;
-						o_mantissa = o_mantissa >> 1;
-					end else if(o_mantissa[23] != 1) begin
-						i_e2 = o_exponent;
-						i_m2 = o_mantissa;
-						o_exponent = o_e2;
-						o_mantissa = o_m2;
-					end
+				end
+				if(o_mantissa[24] == 1) begin
+					o_exponent = o_exponent + 1;
+					o_mantissa = o_mantissa >> 1;
+				end else if((o_mantissa[23] != 1) && (o_exponent != 0)) begin
+					i_e1 = o_exponent;
+					i_m1 = o_mantissa;
+					o_exponent = o_e1;
+					o_mantissa = o_m1;
 				end
 			end
 		end else if (SUB) begin
